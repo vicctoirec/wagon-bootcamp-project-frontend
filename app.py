@@ -1,5 +1,14 @@
 import os
 import streamlit as st
+import requests
+
+
+# Page config
+st.set_page_config(
+    page_title="AI Spotify Lyrics", # => Quick reference - Streamlit
+    page_icon="🐍",
+    layout="centered", # wide
+    initial_sidebar_state="auto") # collapsed
 
 
 # Define the base URI of the API
@@ -10,36 +19,72 @@ import streamlit as st
 if 'API_URI' in os.environ:
     BASE_URI = st.secrets[os.environ.get('API_URI')]
 else:
-    BASE_URI = st.secrets['cloud_api_uri']
+    BASE_URI = st.secrets['cloud_api_url']
+
 # Add a '/' at the end if it's not there
 BASE_URI = BASE_URI if BASE_URI.endswith('/') else BASE_URI + '/'
-# Define the url to be used by requests.get to get a prediction (adapt if needed)
-url = BASE_URI + 'predict'
-
-# Just displaying the source for the API. Remove this in your final version.
-st.markdown(f"Working with {url}")
-
-st.markdown("Now, the rest is up to you. Start creating your page.")
+DUMMY_URL= BASE_URI + 'predict'
+THEMES_URL = BASE_URI + 'predict-artist-themes'
+MOOD_URL = BASE_URI + 'predict-mood-songs'
+SONG_URL = BASE_URI + 'predict-similar-songs'
 
 
-# TODO: Add some titles, introduction, ...
+# Functions
+def get_request(url, input, callback):
+    try:
+        params = {"input":input}
+        response = requests.get(url, params)
+        print(response)
+        callback(response.json())
+    except Exception as e:
+        print(str(e))
+
+def display_themes(response):
+    st.markdown("**Here are the main themes !**")
+    for theme in response['prediction']:
+        st.badge(f"{theme}", color="red")
+
+def display_songs(response):
+    st.markdown("**Check out these tunes !**")
+    for song in response['prediction']:
+        st.badge(f"{song[0]} {song[1]}", color="green")
 
 
-# TODO: Request user input
+# Display API URL
+st.text(f"API used: {DUMMY_URL}")
 
 
-# TODO: Call the API using the user's input
-#   - url is already defined above
-#   - create a params dict based on the user's input
-#   - finally call your API using the requests package
+# Header
+st.markdown("""
+    # AI Spotify Lyrics
+
+    - Get top themes by artists
+    - Get recommended songs based on your mood
+    - Get recommended songs based on a song
+""")
 
 
-# TODO: retrieve the results
-#   - add a little check if you got an ok response (status code 200) or something else
-#   - retrieve the prediction from the JSON
+# Return themes for an artist
+st.header("Discover your artist")
+artist = st.text_input("Search an artist", placeholder="Johnny Cash")
+if st.button("Find themes", key="artist-btn"):
+    get_request(THEMES_URL, artist, display_themes)
 
 
-# TODO: display the prediction in some fancy way to the user
+# Return songs from a mood
+st.header("Find songs matching your mood")
+mood = st.text_area("Pitch your mood",
+                      placeholder="I'm going on vacation to Italy with my best friend. We plan to surf and talk about life/love... We love burning off energy in the evening by dancing.")
+if st.button("Find songs", key="mood-btn"):
+    get_request(MOOD_URL, mood, display_songs)
+
+
+# Return songs from a song
+st.header("Find songs matching your song")
+song = st.text_input("Search a song", placeholder="Smoke Two Joints")
+if st.button("Find songs", key="song-btn"):
+    get_request(SONG_URL, song, display_songs)
+
 
 
 # TODO: [OPTIONAL] maybe you can add some other pages?
