@@ -27,22 +27,23 @@ DUMMY_URL= BASE_URI + 'predict'
 THEMES_URL = BASE_URI + 'predict-artist-themes'
 MOOD_URL = BASE_URI + 'predict-mood-songs'
 SONG_URL = BASE_URI + 'predict-similar-songs'
+ARTISTS_URL = BASE_URI + 'artists'
+SONGS_URL = BASE_URI + 'songs'
 
 
 # Functions
-def get_request(url, input, callback):
+def get_request(url, input=None, callback=None):
     try:
         params = {"input":input}
-        response = requests.get(url, params)
-        print(response)
-        callback(response.json())
+        response = requests.get(url, params).json()
+        if callback:
+            callback(response)
+        return response
     except Exception as e:
-        print(str(e))
+        st.error(str(e))
 
 def display_themes(response):
-    st.markdown("**Here are the main themes !**")
-    for theme in response['prediction']:
-        st.badge(f"{theme}", color="red")
+    st.markdown(response['prediction'])
 
 def display_songs(response):
     st.markdown("**Check out these tunes !**")
@@ -51,7 +52,7 @@ def display_songs(response):
 
 
 # Display API URL
-st.text(f"API used: {DUMMY_URL}")
+st.text(f"API used: {BASE_URI}")
 
 
 # Header
@@ -66,9 +67,11 @@ st.markdown("""
 
 # Return themes for an artist
 st.header("Discover your artist")
-artist = st.text_input("Search an artist", placeholder="Johnny Cash")
+artists = get_request(ARTISTS_URL)['results']
+artist = st.selectbox("Search an artist", options=artists, index=None, placeholder="Type artist's name")
 if st.button("Find themes", key="artist-btn"):
-    get_request(THEMES_URL, artist, display_themes)
+    with st.spinner("Wait for it...", show_time=True):
+        get_request(THEMES_URL, artist, display_themes)
 
 
 # Return songs from a mood
