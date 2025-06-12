@@ -5,6 +5,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import streamlit as st
 from utils import get_request, display_themes, get_urls
 
+st.set_page_config(page_title="Understand Artists' Lyrics", page_icon="🐍🎵", layout="wide")
+
+
 if "artist_themes" not in st.session_state:
     st.session_state["artist_themes"] = None
 

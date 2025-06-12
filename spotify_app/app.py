@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🐍", layout="wide")
+st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🐍🎵", layout="wide")
 
 col1, col2, col3 = st.columns([1, 10, 1])
 
