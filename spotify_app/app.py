@@ -6,7 +6,7 @@ col1, col2, col3 = st.columns([1, 10, 1])
 
 with col2:
     st.title("Welcome to AI Spotify Lyrics")
-    st.markdown("""
+    st.markdown("""git merge
     This app helps you:
     - Get top themes by artists
     - Get recommended songs based on your mood

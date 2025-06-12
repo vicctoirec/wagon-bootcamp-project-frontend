@@ -70,9 +70,14 @@ def spotify_player(songs):
         else:
             st.warning(f"Song not found on Spotify: {artist} - {title}")
 
-    for tid in track_ids:
+    # Create columns equal to number of tracks
+    cols = st.columns(len(track_ids))
+
+    # Embed each track in its own column
+    for col, tid in zip(cols, track_ids):
         html_code = f"""
-        <iframe src="https://open.spotify.com/embed/track/{tid}" width="300" height="80" frameborder="0"
-        allowtransparency="true" allow="encrypted-media"></iframe>
+            <iframe src="https://open.spotify.com/embed/track/{tid}" width="300" height="80" frameborder="0"
+                allowtransparency="true" allow="encrypted-media"></iframe>
         """
-        components.html(html_code, height=100)
+        with col:
+            components.html(html_code, height=100)
