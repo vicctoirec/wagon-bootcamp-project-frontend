@@ -5,9 +5,9 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
 def get_base_uri():
-    base_uri = st.secrets.get('cloud_api_url', '')
+    base_uri = st.secrets.get('cloud_api_uri', '')
     if not base_uri:
-        st.error("API base URL ('cloud_api_url') not found in secrets!")
+        st.error("API base URL ('cloud_api_uri') not found in secrets!")
         return ""
     # Ensure trailing slash
     return base_uri if base_uri.endswith('/') else base_uri + '/'
