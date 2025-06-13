@@ -32,4 +32,4 @@ streamlit_local_docker:
 	-@API_URI=local_docker_uri streamlit run app.py
 
 streamlit_cloud:
-	-@API_URI=cloud_api_uri streamlit run app.py
+	-@API_URI=cloud_api_uri streamlit run spotify_app/app.py
