@@ -26,7 +26,10 @@ if st.button("Find songs", key="mood-btn"):
     else:
         result = get_request(MOOD_URL, mood)
         if result and 'prediction' in result:
-            st.session_state["mood_songs"] = result['prediction']
+            st.session_state["mood_songs"] = zip(
+                result['prediction']['artist'].values(),
+                result['prediction']['track_title_clean'].values()
+            )
         else:
             st.warning("No songs found or API error.")
 
