@@ -3,7 +3,7 @@ import streamlit as st
 st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🐍🎵", layout="wide")
 
 st.sidebar.image(
-    "https://plus.unsplash.com/premium_photo-1682125853703-896a05629709?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "https://plus.unsplash.com/premium_photo-1682125765650-8a7baa2d4bf4?q=80&w=858&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     caption="Vibes for your music journey",
     use_container_width=True
 )
@@ -55,3 +55,9 @@ with exp_col3:
         - 🎶 **Discover a 5-song playlist tailored to your preferred beats and lyrics**
         - ▶️ **Enjoy smooth playback right inside the app**
         """)
+
+st.image(
+    "https://plus.unsplash.com/premium_photo-1682125872909-8e2735d75694?q=80&w=1823&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    caption="Beautiful scenery",
+    use_container_width=True
+)
