@@ -23,6 +23,8 @@ def get_urls():
         'lyrics_url': base_uri + 'explain-similar-songs'
     }
 
+
+@st.cache_resource(show_spinner=False)
 def get_spotify_client():
     client_id = st.secrets.get('spotify_client_id')
     client_secret = st.secrets.get('spotify_client_secret')
@@ -73,6 +75,7 @@ def spotify_player(songs, cols_per_row: int = 3):
     songs : list[tuple] | list[dict]
         •  [(artist, title), …]
         •  ou  [{"artist": …, "track_title_clean": …}, …]
+        °  ou  [[artist, title], ...]
     cols_per_row : int
         Nombre de players par ligne (par défaut = 3).
     """
@@ -83,6 +86,7 @@ def spotify_player(songs, cols_per_row: int = 3):
     # ---------- normalisation (dicts → tuples) ------------------------------
     if isinstance(songs[0], dict):
         songs = [(s["artist"], s["track_title_clean"]) for s in songs]
+
 
     # ---------- récupération des track-ids ----------------------------------
     track_ids = []
