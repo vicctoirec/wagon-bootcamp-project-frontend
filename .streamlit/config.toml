@@ -1,6 +1,6 @@
 [theme]
-primaryColor="666b6e"
-backgroundColor="#f5f7fa"
-secondaryBackgroundColor="#9dc8e4"
-textColor="#22223b"
-font="sans serif"
+primaryColor = "#1DB954"              # vert Spotify (boutons, sliders…)
+backgroundColor = "#191414"           # noir quasi-pur du fond
+secondaryBackgroundColor = "#121212"  # gris très foncé (cartes, sidebars)
+textColor = "#FFFFFF"                 # texte blanc
+font = "sans serif"
