@@ -4,8 +4,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import streamlit as st
 from utils import get_request, display_songs, spotify_player, get_urls
+from style import apply as apply_style
 
 st.set_page_config(page_title="Find Similar Songs", page_icon="🐍🎵", layout="wide")
+
+apply_style()
 
 if "song_songs" not in st.session_state:
     st.session_state["song_songs"] = None

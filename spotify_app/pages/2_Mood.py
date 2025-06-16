@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import streamlit as st
 from utils import get_request, display_matching_songs, spotify_player, get_urls
+from style import apply as apply_style
 
 urls = get_urls()
 ENRICH_URL = urls.get('enriched_url', '')
@@ -18,34 +19,7 @@ spotify_green = "#1DB954"
 
 st.set_page_config(page_title="Find Songs", page_icon="🎧", layout="wide")
 
-st.markdown(f"""
-<style>
-/* ---- fond & texte global ---- */
-.stApp {{ background:#191414; color:#FFFFFF; }}
-
-/* ---- bouton principal ---- */
-div.stButton>button {{
-    background:{spotify_green}; color:#FFFFFF; border:none;
-    padding:.5rem 1.2rem; border-radius:9999px; font-weight:700;
-}}
-div.stButton>button:hover {{ background:#1ed760; }}
-
-/* ---- zone de texte ---- */
-textarea, textarea:focus {{
-    background:#121212 !important;
-    color:#FFFFFF !important;
-}}
-textarea::placeholder {{
-    color:#888888 !important;   /* gris clair */
-    opacity:1;
-}}
-
-/* ---- labels & titres ---- */
-label, h1, h2, h3, h4, h5, h6, p {{
-    color:#FFFFFF !important;
-}}
-</style>
-""", unsafe_allow_html=True)
+apply_style()
 
 # ---------- State init---------------------------------------------------------
 for k in ("raw", "enriched","predict-mood-songs", "loading_playlist"):

@@ -1,6 +1,9 @@
 import streamlit as st
+from style import apply as apply_style
 
 st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🐍🎵", layout="wide")
+
+apply_style()
 
 st.sidebar.image(
     "https://plus.unsplash.com/premium_photo-1682125765650-8a7baa2d4bf4?q=80&w=858&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
