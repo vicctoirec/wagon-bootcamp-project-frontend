@@ -24,7 +24,7 @@ def get_trending(limit=10, market="FR"):
         TREND_PLAY_ID,
         limit=limit,
         market=market,
-        additional_types=("track",)   # ← évite les épisodes
+        additional_types=("track",)
     )["items"]
 
-    return items                         # liste de dicts « track »
+    return items

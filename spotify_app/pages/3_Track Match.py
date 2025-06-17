@@ -15,7 +15,7 @@ ARTIST_SONG_URL = urls.get('songs_by_artist_url', '') # Get a list of available 
 # ------------------------------------------------------------------------------
 
 # ----------- Streamlit config & style------------------------------------------
-st.set_page_config(page_title="Find Similar Songs", page_icon="🐍🎵", layout="wide")
+st.set_page_config(page_title="Find Similar Songs", page_icon="🎵", layout="wide")
 apply_style()
 
 # ---------- Caches ------------------------------------------------------------
@@ -40,46 +40,70 @@ for k in (
 ):
     st.session_state.setdefault(k, None)
 
+# ------- 4.  HEADER -----------------------------------------------------------
+st.markdown(
+    """
+    <h1 style="margin-bottom:0.25rem">Discover songs with lyrics just like yours 🫵</h1>
+    <p style="opacity:0.8;margin-top:0">
+        Pick a track&nbsp;→&nbsp;we’ll hunt down songs whose <b>lyrics share the same vibe</b>.
+    </p>
+    <hr style="border:none;border-top:1px solid #333;margin-top:1rem;">
+    """,
+    unsafe_allow_html=True,
+)
+
+# ------- 5.  SMALL CSS HELPER -------------------------------------------------
+st.markdown(
+    """
+    <style>
+    .artist-card{
+        background:#121212;
+        padding:0.5rem 2rem 1.5rem;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # ----------  Sélection ARTISTE ------------------------------------------------
-st.header("Discover songs with **lyrics just like yours**")
+st.markdown('<div class="artist-card">', unsafe_allow_html=True)
 
 artist_list = fetch_artists()
-with st.container():
-    if artist_list:
-        placeholder  = "Search an artist"
-        selection    = st.selectbox("🎧 Select an artist", [placeholder] + artist_list)
+if artist_list:
+            placeholder  = "Search an artist"
+            selection    = st.selectbox("🎧 Select an artist", [placeholder] + artist_list)
 
-        st.session_state.artist_choice = None if selection == placeholder else selection
+            st.session_state.artist_choice = None if selection == placeholder else selection
 
-    if "song_choice" in st.session_state:
-        st.session_state.song_choice = None
+if "song_choice" in st.session_state:
+            st.session_state.song_choice = None
 
-    else:           # fallback texte libre
-        st.session_state.artist_choice = st.text_input(
-            "🎤 Type an artist", placeholder="Johnny Cash"
-        ).strip() or None
+else:           # fallback texte libre
+            st.session_state.artist_choice = st.text_input(
+                "🎤 Type an artist", placeholder="Johnny Cash"
+            ).strip() or None
 
 # ----------  Sélection CHANSON ------------------------------------------------
-song_options = fetch_songs_by_artist(st.session_state.artist_choice)
-if st.session_state.artist_choice and song_options:
-    song_sel = st.selectbox(
-        "🎵 Select a song",
-        ["Search a song"] + song_options,
-        index=0,
-        key="song_choice_select",
-    )
-    st.session_state.song_choice = None if song_sel == "—" else song_sel
-elif st.session_state.artist_choice:   # fallback texte libre
-     st.session_state.song_choice = st.text_input(
+
+if st.session_state.artist_choice:
+    song_options = fetch_songs_by_artist(st.session_state.artist_choice)
+
+    if song_options :
+        song_sel = st.selectbox(
+            "🎵 Select a song",
+            ["Search a song"] + song_options,
+            index=0,
+            key="song_choice_select",
+        )
+        st.session_state.song_choice = None if song_sel == "—" else song_sel
+
+    else:
+        st.session_state.song_choice = st.text_input(
         "🎵 Type a song", placeholder="Thriller"
     ).strip() or None
-else:
-    st.info("Select an artist first 👆")
-    st.stop()
 
 # ----------  Bouton « Find similar song » ------------------------------------
 find_disabled = not (st.session_state.artist_choice and st.session_state.song_choice)
-if st.button("🚀 Find similar songs", key='similar-btn', disabled=find_disabled):
+if st.button("🚀 Find similar songs", key='similar-btn', disabled=find_disabled, use_container_width=True):
     with st.spinner("Searching similar tracks…"):
         st.session_state.song_songs = None          # reset anciens résultats
         st.session_state.lyrics_explain = None
@@ -98,12 +122,13 @@ if st.button("🚀 Find similar songs", key='similar-btn', disabled=find_disable
 
 # ----------  Affichage playlist + bouton « Explain similarities » ------------
 if st.session_state.song_songs:
+    st.markdown("<hr style='border:none;border-top:1px solid #333;'>", unsafe_allow_html=True)
     display_songs({"prediction": st.session_state.song_songs})
     spotify_player(st.session_state.song_songs)
 
     # -- bouton explication ----------------------------------------------------
     explain_disabled = st.session_state.lyrics_explain is not None
-    if st.button("💬 Explain similarities", disabled=explain_disabled):
+    if st.button("💬 Explain similarities", disabled=explain_disabled, use_container_width=True):
         with st.spinner("Analysing lyrics…"):
             res = get_request(
                 LYRICS_URL,
@@ -119,6 +144,7 @@ if st.session_state.song_songs:
 
 # ----------  Affichage explications ------------------------------------------
 if st.session_state.lyrics_explain:
-    st.markdown("---")
     st.subheader("📝 Why are these tracks similar ?")
     st.markdown(st.session_state.lyrics_explain)
+
+st.markdown("</div>", unsafe_allow_html=True)
