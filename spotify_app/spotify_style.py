@@ -29,6 +29,11 @@ input::placeholder {{
     opacity:1;
 }}
 
+/* Sidebar highlight */
+section[data-testid="stSidebar"] > div:first-child {{
+    background:#0d0d0d;}}
+
+
 /* ---- labels & titres ---- */
 label, h1, h2, h3, h4, h5, h6, p {{
     color:#FFFFFF !important;

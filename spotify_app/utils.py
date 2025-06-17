@@ -3,6 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+import re, textwrap
 
 def get_base_uri():
     base_uri = st.secrets.get('local_api_url', '')
@@ -17,12 +18,17 @@ def get_urls():
     return {
         'dummy_url': base_uri + 'predict',
         'themes_url': base_uri + 'predict-artist-themes',
+        'artist_url' : base_uri + 'artists',
+        'similar_artist_url' : base_uri + 'similar-songs/artists',
+        'songs_by_artist_url' : base_uri + 'similar-songs/songs-by-artist',
         'enriched_url' : base_uri + 'enrich_prompt',
         'mood_url': base_uri + 'predict-mood-songs',
         'song_url': base_uri + 'predict-similar-songs',
-        'lyrics_url': base_uri + 'explain-similar-songs'
+        'lyrics_url': base_uri + 'explain-similar-lyrics'
     }
 
+
+@st.cache_resource(show_spinner=False)
 def get_spotify_client():
     client_id = st.secrets.get('spotify_client_id')
     client_secret = st.secrets.get('spotify_client_secret')
@@ -44,14 +50,56 @@ def get_request(url, params=None):
         st.error(f"API request failed: {e}")
         return None
 
-def display_themes(response):
-    st.markdown("**Check out these themes 🎵 🎵 🎵 **")
-    themes = response['prediction']
-    themes_md = "".join(themes)
-    st.markdown(themes_md)
+
+def display_themes(resp: dict, *, artist: str | None = None) -> None:
+    """Affiche proprement les 3 thèmes renvoyés par l’API ‟predict-artist-themes”."""
+
+    raw = (resp or {}).get("prediction", "").strip()
+    if not raw:
+        st.warning("No themes to display.")
+        return
+
+    text = re.sub(r"(?<!\n)(?<!^)\s(?=[23]\.)", "\n", raw)
+
+    # Découpage en blocs « n. Titre » + description
+    pattern = re.compile(
+        r"""           # ex. 1. Love and Romance\nDescription…
+        ^\s*(\d\.)\s*            # => groupe1 = "1."
+        ([^\n]+?)\s*             # => groupe2 = Titre (jusqu’au \n)
+        \n+                      # saut de ligne(s)
+        ([^\n]+(?:\n(?!\d\.).+)*) # => groupe3 = description = lignes
+        """,
+        re.M | re.X,
+    )
+    blocks = pattern.findall(text)
+
+    # Si on en a < 3 on log pour debug, mais on affiche quand même le brut
+    if len(blocks) < 3:
+        st.info("⚠️ Theme extraction fallback (pattern mismatch).")
+        st.markdown(f"```\n{raw}\n```")
+        return
+
+
+    # Mise en forme MarkDown
+    wrap = textwrap.TextWrapper(width=95, break_long_words=False)
+
+    md = [
+        f"### Check out {artist or 'this artist'}’s lyrics themes 🎵",
+        "",
+        f"Here are the **{len(blocks)} main themes** in {artist or 'their'} songs:",
+        "",
+    ]
+
+    for _, title, desc in blocks:
+        md.append(f"**{title.strip()}**")
+        md.append("")
+        md.append(wrap.fill(" ".join(desc.split())))
+        md.append("")
+
+    st.markdown("\n".join(md))
 
 def display_songs(response):
-    st.markdown("**Check out these tunes ! 🎵 🎵 🎵 **")
+    st.markdown("**Check out these tunes !🎵**")
     for song in response['prediction']:
         st.badge(f"{song[1]} - {song[0]}", color="green")
 
@@ -73,6 +121,7 @@ def spotify_player(songs, cols_per_row: int = 3):
     songs : list[tuple] | list[dict]
         •  [(artist, title), …]
         •  ou  [{"artist": …, "track_title_clean": …}, …]
+        °  ou  [[artist, title], ...]
     cols_per_row : int
         Nombre de players par ligne (par défaut = 3).
     """
@@ -83,6 +132,7 @@ def spotify_player(songs, cols_per_row: int = 3):
     # ---------- normalisation (dicts → tuples) ------------------------------
     if isinstance(songs[0], dict):
         songs = [(s["artist"], s["track_title_clean"]) for s in songs]
+
 
     # ---------- récupération des track-ids ----------------------------------
     track_ids = []
