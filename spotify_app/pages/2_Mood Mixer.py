@@ -5,13 +5,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import streamlit as st
 from utils import get_request, display_matching_songs, spotify_player, get_urls
-from style import apply as apply_style
+from spotify_style import apply as apply_style
 
 urls = get_urls()
 ENRICH_URL = urls.get('enriched_url', '')
 MOOD_URL = urls.get('mood_url', '')
 # -----------------------------------------------------------------------------
-
 
 
 # ----------- Streamlit config & style------------------------------------------
@@ -30,7 +29,7 @@ for k in ("raw", "enriched","predict-mood-songs", "loading_playlist"):
 
 
 # ---------- Input zone --------------------------------------------------------
-st.header("Find songs matching your mood")
+st.header("Turn your feelings into the perfect playlist")
 st.write("Describe your feelings or plans - AI will craft a vibe!")
 
 st.session_state.raw = st.text_area(

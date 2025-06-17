@@ -57,21 +57,3 @@ with ecol3:
         )
 
 st.markdown("---")
-
-# -- 4️⃣  CONTENU DYNAMIQUE (Spotify API) --------------------------------------
-tracks = get_trending()
-
-def card_grid(items, n_cols=5):
-    rows = [items[i:i+n_cols] for i in range(0, len(items), n_cols)]
-    for row in rows:
-        cols = st.columns(len(row))
-        for col, it in zip(cols, row):
-            cover = it["track"]["album"]["images"][0]["url"]
-            title = it["track"]["name"]
-            art   = it["track"]["artists"][0]["name"]
-            with col:
-                st.image(cover, use_column_width=True)
-                st.markdown(f"**{title}**  \n<small>{art}</small>", unsafe_allow_html=True)
-
-st.subheader("🔥 Trending tracks (Global Top 50)")
-card_grid(tracks)

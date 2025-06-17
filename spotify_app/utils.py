@@ -17,10 +17,13 @@ def get_urls():
     return {
         'dummy_url': base_uri + 'predict',
         'themes_url': base_uri + 'predict-artist-themes',
+        'artist_url' : base_uri + 'artists',
+        'similar_artist_url' : base_uri + 'similar-songs/artists',
+        'songs_by_artist_url' : base_uri + 'similar-songs/songs-by-artist',
         'enriched_url' : base_uri + 'enrich_prompt',
         'mood_url': base_uri + 'predict-mood-songs',
         'song_url': base_uri + 'predict-similar-songs',
-        'lyrics_url': base_uri + 'explain-similar-songs'
+        'lyrics_url': base_uri + 'explain-similar-lyrics'
     }
 
 
@@ -47,13 +50,13 @@ def get_request(url, params=None):
         return None
 
 def display_themes(response):
-    st.markdown("**Check out these themes 🎵 🎵 🎵 **")
+    st.markdown("Check out these themes 🎵 ")
     themes = response['prediction']
     themes_md = "".join(themes)
     st.markdown(themes_md)
 
 def display_songs(response):
-    st.markdown("**Check out these tunes ! 🎵 🎵 🎵 **")
+    st.markdown("**Check out these tunes !🎵**")
     for song in response['prediction']:
         st.badge(f"{song[1]} - {song[0]}", color="green")
 

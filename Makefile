@@ -26,7 +26,7 @@ test_structure:
 streamlit: streamlit_local
 
 streamlit_local:
-	-@API_URI=local_api_uri streamlit run spotify_app/0_Home.py
+	-@API_URI=local_api_uri streamlit run spotify_app/0_Homepage.py
 
 streamlit_local_docker:
 	-@API_URI=local_docker_uri streamlit run app.py
