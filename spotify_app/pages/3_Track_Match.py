@@ -24,6 +24,10 @@ hero(
     link      = None,
 )
 
+for k in ("artist_themes", "artist_choice", "sm_artist_choice", "sm_song_choice", "sm_song_songs", "sm_lyrics_explain"):
+    if k not in st.session_state:
+        st.session_state.setdefault(k, None)
+
 # ---------- Caches ------------------------------------------------------------
 @st.cache_data(ttl=3_600, show_spinner="Loading artist list…")
 def fetch_artists():
@@ -38,15 +42,17 @@ def fetch_songs_by_artist(artist: str) -> list[str]:
     res = get_request(ARTIST_SONG_URL, params={"input": artist})
     return sorted(res.get("results", []))
 
-# ----------- Init state -------------------------------------------------------
-for k in (
-    "artist_choice", "song_choice",
-    "song_songs",       # résultat de SONG_URL
-    "lyrics_explain",   # résultat de LYRICS_URL
-):
-    st.session_state.setdefault(k, None)
+# ----------- Reset callbacks --------------------------------------------------
+def reset_on_artist_change():
+    st.session_state.sm_song_choice = None
+    st.session_state.sm_song_songs = None
+    st.session_state.sm_lyrics_explain = None
 
+def reset_on_song_change():
+    st.session_state.sm_song_songs = None
+    st.session_state.sm_lyrics_explain = None
 
+# ----------- UI ---------------------------------------------------------------
 st.divider()
 
 st.markdown(
@@ -63,37 +69,42 @@ st.markdown(
 # ----------  Sélection ARTISTE ------------------------------------------------
 st.markdown('<div class="artist-card">', unsafe_allow_html=True)
 
+
 artist_list = fetch_artists()
 if artist_list:
-            placeholder  = "Search an artist"
-            selection    = st.selectbox("🎧 Select an artist", [placeholder] + artist_list)
+    placeholder  = "Search an artist"
+    index = artist_list.index(st.session_state.sm_artist_choice) if st.session_state.sm_artist_choice else None
+    artist_sel  = st.selectbox("🎧  Select an artist",
+                                artist_list,
+                                placeholder=placeholder,
+                                index = index,
+                                on_change=reset_on_artist_change)
 
-            st.session_state.artist_choice = None if selection == placeholder else selection
+    st.session_state.sm_artist_choice = artist_sel
 
-if "song_choice" in st.session_state:
-            st.session_state.song_choice = None
-
-else:           # fallback texte libre
-            st.session_state.artist_choice = st.text_input(
-                "🎤 Type an artist", placeholder="Johnny Cash"
-            ).strip() or None
+else:        # fallback texte libre
+    st.session_state.sm_artist_choice = st.text_input(
+        "🎤 Type an artist", placeholder="Johnny Cash"
+    ).strip() or None
 
 # ----------  Sélection CHANSON ------------------------------------------------
 
-if st.session_state.artist_choice:
-    song_options = fetch_songs_by_artist(st.session_state.artist_choice)
-
+if st.session_state.sm_artist_choice:
+    song_options = fetch_songs_by_artist(st.session_state.sm_artist_choice)
+    index = song_options.index(st.session_state.sm_song_choice) if st.session_state.sm_song_choice else None
     if song_options :
         song_sel = st.selectbox(
             "🎵 Select a song",
-            ["Search a song"] + song_options,
-            index=0,
+            song_options,
+            placeholder="Search a song",
+            index=index,
             key="song_choice_select",
+            on_change=reset_on_song_change
         )
-        st.session_state.song_choice = None if song_sel == "—" else song_sel
+        st.session_state.sm_song_choice = song_sel
 
     else:
-        st.session_state.song_choice = st.text_input(
+        st.session_state.sm_song_choice = st.text_input(
         "🎵 Type a song", placeholder="Thriller"
     ).strip() or None
 
@@ -110,62 +121,61 @@ st.markdown("""
 
 # ----------  Affichage lecteur Spotify de la chanson sélectionnée ------------
 valid_song_selected = (
-    st.session_state.artist_choice
-    and st.session_state.song_choice
-    and st.session_state.song_choice != "Search a song"
+    st.session_state.sm_artist_choice
+    and st.session_state.sm_song_choice
 )
 
 if valid_song_selected:
     spotify_player([{
-        "artist": st.session_state.artist_choice,
-        "track_title_clean":  st.session_state.song_choice
+        "artist": st.session_state.sm_artist_choice,
+        "track_title_clean":  st.session_state.sm_song_choice
     }])
 
 # ----------  Bouton « Find similar song » ------------------------------------
-find_disabled = not (st.session_state.artist_choice and st.session_state.song_choice)
+find_disabled = not (st.session_state.sm_artist_choice and st.session_state.sm_song_choice)
 if st.button("🚀 Find similar songs", key='similar-btn', disabled=find_disabled, use_container_width=True):
     with st.spinner("Searching similar tracks…"):
-        st.session_state.song_songs = None          # reset anciens résultats
-        st.session_state.lyrics_explain = None
+        st.session_state.sm_song_songs = None          # reset anciens résultats
+        st.session_state.sm_lyrics_explain = None
 
         res = get_request(
             SONG_URL,
             params={
-                "input_song":   st.session_state.song_choice,
-                "input_artist": st.session_state.artist_choice,
+                "input_song":   st.session_state.sm_song_choice,
+                "input_artist": st.session_state.sm_artist_choice,
             },
         )
     if res and "prediction" in res:
-        st.session_state.song_songs = res["prediction"]
+        st.session_state.sm_song_songs = res["prediction"]
     else:
         st.error("API error: could not retrieve similar songs.")
 
 # ----------  Affichage playlist + bouton « Explain similarities » ------------
-if st.session_state.song_songs:
+if st.session_state.sm_song_songs:
     st.markdown("<hr style='border:none;border-top:1px solid #333;'>", unsafe_allow_html=True)
-    display_songs({"prediction": st.session_state.song_songs})
-    spotify_player(st.session_state.song_songs)
+    display_songs({"prediction": st.session_state.sm_song_songs})
+    spotify_player(st.session_state.sm_song_songs)
 
     # -- bouton explication ----------------------------------------------------
-    explain_disabled = st.session_state.lyrics_explain is not None
+    explain_disabled = st.session_state.sm_lyrics_explain is not None
     if st.button("💬 Explain similarities", disabled=explain_disabled, use_container_width=True):
         with st.spinner("Analysing lyrics…"):
             res = get_request(
                 LYRICS_URL,
                 params={
-                    "input_song":   st.session_state.song_choice,
-                    "input_artist": st.session_state.artist_choice,
+                    "input_song":   st.session_state.sm_song_choice,
+                    "input_artist": st.session_state.sm_artist_choice,
                 },
             )
         if res and "prediction" in res:
-            st.session_state.lyrics_explain = res["prediction"]
+            st.session_state.sm_lyrics_explain = res["prediction"]
         else:
             st.error("API error: could not retrieve explanation.")
 
 # ----------  Affichage explications ------------------------------------------
-if st.session_state.lyrics_explain:
+if st.session_state.sm_lyrics_explain:
     st.subheader("📝 Why are these tracks similar ?")
-    st.markdown(st.session_state.lyrics_explain)
+    st.markdown(st.session_state.sm_lyrics_explain)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
