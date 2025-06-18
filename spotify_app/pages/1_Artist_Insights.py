@@ -66,6 +66,17 @@ else:
             st.text_input("🎧  Type an artist").strip() or None
         )
 
+# --- CSS pour styliser le bouton désactivé ---
+st.markdown("""
+    <style>
+    button[disabled] {
+        border: 1px solid #CCCCCC !important;
+        color: #AAAAAA !important;
+        opacity: 1 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- Bouton -------------------------------------------------------
 clicked = st.button("Find themes ", use_container_width=True,
                  disabled=st.session_state.artist_choice is None)
