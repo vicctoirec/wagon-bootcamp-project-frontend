@@ -7,8 +7,7 @@ et rappelle les trois features de l’app.
 """
 
 import streamlit as st
-from spotify_app.spotify_style import apply           # thème global dark spotify
-from spotify_app.spotify_api   import get_trending
+from spotify_style import apply           # thème global dark spotify
 
 # -- 1️⃣  THEME ----------------------------------------------------------------
 st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🎧", layout="wide")
