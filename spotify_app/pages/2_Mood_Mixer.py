@@ -31,11 +31,17 @@ hero(
 
 # ---------- State init---------------------------------------------------------
 for k in ("raw", "enriched","predict-mood-songs", "loading_playlist", "topics"):
-    if k == "loading_playlist":
-        st.session_state.setdefault(k, False)
-    else:
-        st.session_state.setdefault(k, None)
+    if k not in st.session_state:
+        if k == "loading_playlist":
+            st.session_state.setdefault(k, False)
+        else:
+            st.session_state.setdefault(k, None)
 
+# ----------- Reset callbacks --------------------------------------------------
+def reset_on_mood_change():
+    st.session_state.enriched = None
+    st.session_state['predict-mood-songs'] = None
+# ----------- UI ---------------------------------------------------------------
 st.divider()
 
 st.markdown(
@@ -57,6 +63,7 @@ st.session_state.raw = st.text_area(
     value=st.session_state.raw or "",
     height=100,
     placeholder="I'm going on vacation to Italy with my best friend…",
+    on_change=reset_on_mood_change
 )
 
 # ---------- STEP 1 : Enrich ---------------------------------------------------
@@ -72,8 +79,10 @@ if st.session_state.enriched is None:
                 result = get_request(ENRICH_URL, params={"user_input": raw})
 
                 # ───────── Gestion du retour ─────────
-                if result and "enriched_input" in result:
+                if result:
                     st.session_state.enriched = result["enriched_input"]
+                    st.session_state.topics = result["topics"]
+                    st.rerun()
                 else:
                     st.error("API error: could not retrieve enriched prompt.")
 
@@ -97,7 +106,7 @@ if st.session_state.enriched:
                     result = get_request(ENRICH_URL,
                                         params={"user_input": st.session_state.raw})
 
-                    if result and "topics" in result:
+                    if result:
                         st.session_state.topics = result["topics"]
                         st.session_state.enriched = result["enriched_input"]
                         st.session_state['predict-mood-songs'] = None
@@ -128,7 +137,7 @@ if st.session_state['predict-mood-songs']:
     st.success("Here are your songs!")
     songs = st.session_state['predict-mood-songs']
 
-    display_matching_songs(songs)
+    # display_matching_songs(songs)
     spotify_player(songs)
 
 st.markdown("</div>", unsafe_allow_html=True)
