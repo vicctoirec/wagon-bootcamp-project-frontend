@@ -108,6 +108,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# ----------  Affichage lecteur Spotify de la chanson sélectionnée ------------
+valid_song_selected = (
+    st.session_state.artist_choice
+    and st.session_state.song_choice
+    and st.session_state.song_choice != "Search a song"
+)
+
+if valid_song_selected:
+    spotify_player([{
+        "artist": st.session_state.artist_choice,
+        "track_title_clean":  st.session_state.song_choice
+    }])
+
 # ----------  Bouton « Find similar song » ------------------------------------
 find_disabled = not (st.session_state.artist_choice and st.session_state.song_choice)
 if st.button("🚀 Find similar songs", key='similar-btn', disabled=find_disabled, use_container_width=True):
