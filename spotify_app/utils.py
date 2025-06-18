@@ -50,38 +50,35 @@ def get_request(url, params=None):
         st.error(f"API request failed: {e}")
         return None
 
-
 def display_themes(resp: dict, *, artist: str | None = None) -> None:
-    """Affiche proprement les 3 thèmes renvoyés par l’API ‟predict-artist-themes”."""
+    """Nicely displays the 3 themes returned by the ‟predict-artist-themes” API."""
 
     raw = (resp or {}).get("prediction", "").strip()
     if not raw:
         st.warning("No themes to display.")
         return
 
+    # Ensure each numbered theme starts on a new line
     text = re.sub(r"(?<!\n)(?<!^)\s(?=[23]\.)", "\n", raw)
 
-    # Découpage en blocs « n. Titre » + description
+    # Split into numbered blocks
     pattern = re.compile(
-        r"""           # ex. 1. Love and Romance\nDescription…
-        ^\s*(\d\.)\s*            # => groupe1 = "1."
-        ([^\n]+?)\s*             # => groupe2 = Titre (jusqu’au \n)
-        \n+                      # saut de ligne(s)
-        ([^\n]+(?:\n(?!\d\.).+)*) # => groupe3 = description = lignes
+        r"""
+        ^\s*(\d\.)\s*                 # Match "1.", "2.", etc.
+        ([^\n]+?)\s*                 # Title line
+        \n+                         # One or more line breaks
+        ([^\n]+(?:\n(?!\d\.).+)*)    # Description (with possible wrapped lines)
         """,
         re.M | re.X,
     )
 
     blocks = pattern.findall(text)
 
-    # Si on en a < 3 on log pour debug, mais on affiche quand même le brut
     if len(blocks) < 3:
         st.info("⚠️ Theme extraction fallback (pattern mismatch).")
         st.markdown(f"```\n{raw}\n```")
         return
 
-
-    # Mise en forme MarkDown
     wrap = textwrap.TextWrapper(width=95, break_long_words=False)
 
     md = [
@@ -91,10 +88,22 @@ def display_themes(resp: dict, *, artist: str | None = None) -> None:
         "",
     ]
 
+    quote_pattern = re.compile(r'“([^”]+)”\s*\(([^)]+)\)')
+
     for _, title, desc in blocks:
         md.append(f"**{title.strip()}**")
         md.append("")
-        md.append(wrap.fill(" ".join(desc.split())))
+
+        # Split quotes and rest of description
+        quotes = quote_pattern.findall(desc)
+        desc_without_quotes = quote_pattern.sub("", desc).strip()
+
+        if desc_without_quotes:
+            md.append(wrap.fill(" ".join(desc_without_quotes.split())))
+            md.append("")
+
+        for quote, song in quotes:
+            md.append(f"- “{quote}” ({song})")
         md.append("")
 
     st.markdown("\n".join(md))
