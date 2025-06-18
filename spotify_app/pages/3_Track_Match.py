@@ -97,6 +97,17 @@ if st.session_state.artist_choice:
         "🎵 Type a song", placeholder="Thriller"
     ).strip() or None
 
+# --- CSS pour styliser le bouton désactivé ---
+st.markdown("""
+    <style>
+    button[disabled] {
+        border: 1px solid #CCCCCC !important;
+        color: #AAAAAA !important;
+        opacity: 1 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # ----------  Bouton « Find similar song » ------------------------------------
 find_disabled = not (st.session_state.artist_choice and st.session_state.song_choice)
 if st.button("🚀 Find similar songs", key='similar-btn', disabled=find_disabled, use_container_width=True):
