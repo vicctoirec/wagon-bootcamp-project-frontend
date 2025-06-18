@@ -22,8 +22,9 @@ st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🎧", layout="wid
 apply()
 
 # Init state for artist insights -----------------------------------------------
-for k in ("artist_themes", "artist_choice"):
-    st.session_state.setdefault(k, None)
+for k in ("artist_themes", "artist_choice", "sm_artist_choice", "sm_song_choice", "sm_song_songs", "sm_lyrics_explain"):
+    if k not in st.session_state:
+        st.session_state.setdefault(k, None)
 
 st.markdown(
     f"""
