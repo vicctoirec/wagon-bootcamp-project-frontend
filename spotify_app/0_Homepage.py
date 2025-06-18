@@ -1,58 +1,178 @@
-# spotify_app/pages/0_Home.py
 """
 🎧  Spotify-style landing page
 ────────────────────────────
-Affiche la “home” dynamique (trending tracks / new releases / popular artists)
+Affiche une “home” dynamique (trending tracks / new releases / popular artists)
 et rappelle les trois features de l’app.
 """
 
 import streamlit as st
+import spotipy
+import sys
+import textwrap
 from spotify_style import apply           # thème global dark spotify
+from spotify_api import get_home_sections
+from utils import get_spotify_client
+sp = get_spotify_client()
 
-# -- 1️⃣  THEME ----------------------------------------------------------------
-st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🎧", layout="wide")
+# -- THEME ---------------------------------------------------------------------
+SPOTIFY_GREEN = "#1DB954"
+FONT_URL      = "https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;700&display=swap"
+
+st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🎧", layout="wide", initial_sidebar_state="collapsed")
 apply()
 
-# -- 2️⃣  TITRE ----------------------------------------------------------------
-st.title("Welcome to AI Spotify Lyrics")
-st.write("We’ve built **3 features** to help you fine-tune your music choices thanks to lyrics.")
+st.markdown(
+    f"""
+    <style>
+    @import url('{FONT_URL}');
 
-st.write("Use the page switcher in the sidebar to navigate between features.")
+    html, body, [class*="css"]  {{
+        font-family: 'Circular Std', sans-serif !important;
+    }}
 
-# -- 3️⃣  FEATURES CARDS + EXPANDERS -------------------------------------------
+    /* --- HERO ------------------------------------------------------------ */
+    .hero {{
+        background:linear-gradient(135deg,#1DB954 0%,#0d1 55%,#000 100%);
+        padding:2rem 3rem 2rem;
+        border-radius:1rem;
+        box-shadow:0 8px 24px rgba(0,0,0,.4);
+    }}
+    .hero h1 {{font-size:2.3rem;line-height:1.15;margin:0 0 .5rem}}
+    .hero p  {{margin:0 0 1.5rem;opacity:.85}}
+    .hero a  {{color:#fff !important; text-decoration:none;}}
+    .hero a:hover{{text-decoration:underline;}}
 
-# Première ligne : titres
+    /* --- CARDS ----------------------------------------------------------- */
+        .card-wrap {{
+            display:grid;
+            grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+            gap:28px;
+            margin-top:1.5rem;
+        }}
+        .card {{
+            background:#181818;
+            padding:1rem;
+            border-radius:.75rem;
+            transition:transform .15s;
+            box-shadow:0 0 10px rgba(0,0,0,.4);
+        }}
+        .card:hover {{ transform:scale(1.06); }}
+        .card img{{border-radius:.5rem;width:100%;height:auto}}
+        .card-title{{margin:.6rem 0 0;font-weight:700;font-size:0.95rem}}
+        .card-sub  {{opacity:.8;font-size:.8rem}}
+
+    /* --- BOUTON ---------------------------------------------------------- */
+    .cta {{
+        background:{SPOTIFY_GREEN};
+        color:#fff;padding:.75rem 1.8rem;
+        border:none;border-radius:9999px;font-weight:700;
+        cursor:pointer;font-size:1rem;margin-top:1.2rem;
+    }}
+    .cta:hover{{background:#1ED760}}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# HERO  ------------------------------------------------------------------------
+with st.container():
+    st.markdown(
+        """
+        <div class="hero">
+            <h1>Feel the music.<br/>Read the lyrics.</h1>
+            <p>Three AI-powered features to help you fine-tune your musics choices thanks to lyrics
+            – all inside a Spotify-like experience.</p>
+            <a href="#features" class="cta">Jump in features description ↓</a>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+st.markdown("<div id='discover'></div>", unsafe_allow_html=True)
+
+# CHARGEMENT DONNÉES  ----------------------------------------------------------
+@st.cache_data(ttl=3600)
+def _fetch():
+    return get_home_sections()  # trending, new_albums, popular_artists
+
+try:
+    trending, new_albums, popular_artists = _fetch()
+except Exception as err:
+    st.error(f"Could not reach Spotify API ({err})."); st.stop()
+
+
+# FEATURES ---------------------------------------------------------------------
+st.markdown('<div id="features"></div>', unsafe_allow_html=True)
+
 fcol1, fcol2, fcol3 = st.columns(3)
+
 with fcol1:
-    st.markdown("**🎶 Feature 1: Discover Top Themes in Your Favorite Artist's Lyrics**")
+    with st.expander("🎤  Theme explorer (by artist)"):
+        st.markdown(
+            """
+        - **Enter your favourite artist's name**
+        - We analyse *all* their lyrics
+        - You get a neat write-up of their 3 main themes
+            """
+        )
+
 with fcol2:
-    st.markdown("**😊 Feature 2: Get Song Recommendations Based on Your Mood**")
+    with st.expander("😊  Mood-mix playlist"):
+        st.markdown(
+            """
+        - **Describe today’s mood** in a few words
+        - Receive a brief, personalized mood description
+        - Enjoy a curated 10-songs playlist that perfectly match your mood
+            """
+        )
+
 with fcol3:
-    st.markdown("**🔥 Feature 3: Find Songs Similar to Your Favorite Track**")
-
-# Deuxième ligne : expanders
-ecol1, ecol2, ecol3 = st.columns(3)
-with ecol1:
-    with st.expander("More info"):
+    with st.expander("🎵  Similar-song finder"):
         st.markdown(
-            "- 🎤 **Enter your favorite artist’s name**\n"
-            "- 🔍 **Uncover the main themes and stories behind their lyrics**\n"
-            "- ▶️ **Listen to your artist’s top songs right here in the app**"
-        )
-with ecol2:
-    with st.expander("More info"):
-        st.markdown(
-            "- 📝 **Tell us how you’re feeling today**\n"
-            "- ✍️ **Receive a brief, personalized mood description**\n"
-            "- 🎧 **Enjoy a curated 5-song playlist that perfectly matches your vibe**\n"
-            "- ▶️ **Play the playlist seamlessly within the app**"
-        )
-with ecol3:
-    with st.expander("More info"):
-        st.markdown(
-            "- 🎵 **Input your favorite song and artist**\n"
-            "- 🎶 **Discover a 5-song playlist tailored to your preferred beats and lyrics**\n"
-            "- ▶️ **Enjoy smooth playback right inside the app**"
+            """
+        - **Pick your favorite track & artist**
+        - We hunt down songs whose *lyrics* match your preferred beats and lyrics
+        - Enjoy smooth playback right inside the app
+        - Click *Explain* to see why the matches work
+            """
         )
 
-st.markdown("---")
+
+#  Affichage vignettes ---------------------------------------------------------
+def card_grid(
+        items, *, cover, title, subtitle,
+        n_cols: int = 6, img_h: int = 160
+    ):
+    rows = [items[i:i+n_cols] for i in range(0, len(items), n_cols)]
+    for row in rows:
+        cols = st.columns(n_cols, gap="small")
+        for i in range(n_cols):
+            with cols[i]:
+                if i < len(row):
+                    it = row[i]
+                    st.image(cover(it), use_container_width=True,
+                             clamp=True, output_format="JPEG", caption=None)
+                    st.markdown(
+                        f"<b>{title(it)}</b><br>"
+                        f"<span style='font-size:.8rem;opacity:.7'>"
+                        f"{subtitle(it)}</span>",
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.empty()
+
+
+
+# SECTIONS  --------------------------------------------------------------------
+st.subheader("🔥 Trending tracks")
+
+
+st.subheader("🆕 New releases")
+card_grid(
+    new_albums[:10],
+    cover   = lambda it: it["images"][0]["url"],
+    title   = lambda it: textwrap.shorten(it["name"], 22),
+    subtitle= lambda it: ", ".join(a["name"] for a in it["artists"]),
+)
+
+st.subheader("🎤 Popular artists")

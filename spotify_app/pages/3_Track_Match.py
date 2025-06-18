@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import streamlit as st
 from utils import get_request, display_songs, spotify_player, get_urls
-from spotify_style import apply as apply_style
+from spotify_style import apply as apply_style, hero
 
 urls = get_urls()
 SONG_URL = urls.get('song_url', '') # Endpoint qui retourne les chansons similaires
@@ -17,6 +17,12 @@ ARTIST_SONG_URL = urls.get('songs_by_artist_url', '') # Get a list of available 
 # ----------- Streamlit config & style------------------------------------------
 st.set_page_config(page_title="Find Similar Songs", page_icon="🎵", layout="wide")
 apply_style()
+hero(
+    title     = "Discover songs with lyrics just like yours 🫵",
+    subtitle  = "Pick a track&nbsp;→&nbsp;we’ll hunt down songs whose <b>lyrics share the same vibe</b>.",
+    btn_text  = None,
+    link      = None,
+)
 
 # ---------- Caches ------------------------------------------------------------
 @st.cache_data(ttl=3_600, show_spinner="Loading artist list…")
@@ -40,25 +46,15 @@ for k in (
 ):
     st.session_state.setdefault(k, None)
 
-# ------- 4.  HEADER -----------------------------------------------------------
-st.markdown(
-    """
-    <h1 style="margin-bottom:0.25rem">Discover songs with lyrics just like yours 🫵</h1>
-    <p style="opacity:0.8;margin-top:0">
-        Pick a track&nbsp;→&nbsp;we’ll hunt down songs whose <b>lyrics share the same vibe</b>.
-    </p>
-    <hr style="border:none;border-top:1px solid #333;margin-top:1rem;">
-    """,
-    unsafe_allow_html=True,
-)
 
-# ------- 5.  SMALL CSS HELPER -------------------------------------------------
+st.divider()
+
 st.markdown(
     """
     <style>
     .artist-card{
-        background:#121212;
-        padding:0.5rem 2rem 1.5rem;}
+        background:#191414;
+        padding:0.5rem 1.5rem 0.5rem;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -100,19 +96,6 @@ if st.session_state.artist_choice:
         st.session_state.song_choice = st.text_input(
         "🎵 Type a song", placeholder="Thriller"
     ).strip() or None
-
-# ----------  Affichage lecteur Spotify de la chanson sélectionnée ------------
-valid_song_selected = (
-    st.session_state.artist_choice
-    and st.session_state.song_choice
-    and st.session_state.song_choice != "Search a song"
-)
-
-if valid_song_selected:
-    spotify_player([{
-        "artist": st.session_state.artist_choice,
-        "track_title_clean":  st.session_state.song_choice
-    }])
 
 # ----------  Bouton « Find similar song » ------------------------------------
 find_disabled = not (st.session_state.artist_choice and st.session_state.song_choice)

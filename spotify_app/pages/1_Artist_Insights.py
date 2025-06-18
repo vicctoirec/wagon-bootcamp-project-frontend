@@ -5,12 +5,20 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import streamlit as st
 from utils import get_request, display_themes, get_urls
-from spotify_style import apply as apply_style
+from spotify_style import apply as apply_style, hero
 # ------------------------------------------------------------------------------
 
 # ----------- Streamlit config & style------------------------------------------
 st.set_page_config(page_title="Understand your favorite artists' lyrics", page_icon="🎤", layout="wide")
 apply_style()
+
+hero(
+    title     = "Unpack the stories behind your favourite artist 🎙️",
+    subtitle  = "Pick an artist → we’ll scan their catalogue and reveal the "
+                "<b>three&nbsp;main&nbsp;themes</b> running through their lyrics.",
+    btn_text  = None,
+    link      = None,
+)
 
 urls = get_urls()
 THEMES_URL = urls.get('themes_url', '')
@@ -30,21 +38,7 @@ def fetch_artists():
 
 artist_list = fetch_artists()
 
-# ----------------- Intro-------------------------------------------------------
-st.markdown(
-    """
-    <div style="max-width:900px;margin:auto">
-      <h1 style="margin-bottom:0">
-        Unpack the stories behind your favourite artist 🎙️
-      </h1>
-      <p style="opacity:0.8;margin-top:0.25rem">
-        Pick an artist&nbsp;→&nbsp;we’ll scan their catalogue and reveal the
-        <b>three&nbsp;main&nbsp;themes</b> running through their lyrics.
-      </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+
 st.divider()
 
 # ---------------- Layout ---------------------------------------------
@@ -91,7 +85,6 @@ st.markdown("</div>", unsafe_allow_html=True)
 if st.session_state.artist_themes:
     st.divider()
     display_themes(st.session_state.artist_themes, artist=st.session_state.artist_choice)
-
 
 # ----------  Séparateur  -----------------------------------------
 st.markdown(

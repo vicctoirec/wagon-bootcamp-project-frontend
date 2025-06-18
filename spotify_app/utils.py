@@ -71,6 +71,7 @@ def display_themes(resp: dict, *, artist: str | None = None) -> None:
         """,
         re.M | re.X,
     )
+
     blocks = pattern.findall(text)
 
     # Si on en a < 3 on log pour debug, mais on affiche quand même le brut
