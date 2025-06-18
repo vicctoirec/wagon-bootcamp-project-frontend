@@ -12,6 +12,10 @@ from spotify_style import apply as apply_style, hero
 st.set_page_config(page_title="Understand your favorite artists' lyrics", page_icon="🎤", layout="wide")
 apply_style()
 
+for k in ("artist_themes", "artist_choice", "sm_artist_choice", "sm_song_choice", "sm_song_songs", "sm_lyrics_explain"):
+    if k not in st.session_state:
+        st.session_state.setdefault(k, None)
+
 hero(
     title     = "Unpack the stories behind your favourite artist 🎙️",
     subtitle  = "Pick an artist → we’ll scan their catalogue and reveal the "
@@ -36,9 +40,14 @@ def fetch_artists():
 artist_list = fetch_artists()
 
 
+# ----------- Reset callbacks --------------------------------------------------
+def reset_on_artist_change():
+    st.session_state.artist_themes = None
+
+
+# ----------- UI ---------------------------------------------------------------
 st.divider()
 
-# ---------------- Layout ---------------------------------------------
 st.markdown(
     """
     <style>
@@ -58,7 +67,8 @@ if artist_list:
     artist_sel  = st.selectbox("🎧  Select an artist",
                                 artist_list,
                                 placeholder=placeholder,
-                                index = index)
+                                index = index,
+                                on_change=reset_on_artist_change)
 
     st.session_state.artist_choice = artist_sel
 else:
