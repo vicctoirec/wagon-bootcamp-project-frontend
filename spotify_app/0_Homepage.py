@@ -100,6 +100,43 @@ try:
 except Exception as err:
     st.error(f"Could not reach Spotify API ({err})."); st.stop()
 
+# FEATURES ---------------------------------------------------------------------
+st.markdown('<div id="features"></div>', unsafe_allow_html=True)
+
+st.subheader("🤓 Feature description")
+
+fcol1, fcol2, fcol3 = st.columns(3)
+
+with fcol1:
+    with st.expander("🎤  Artist insights"):
+        st.markdown(
+            """
+        - **Enter your favourite artist's name**
+        - We analyse *all* their lyrics
+        - You get a neat write-up of their 3 main themes
+            """
+        )
+
+with fcol2:
+    with st.expander("😊  Mood-mixer"):
+        st.markdown(
+            """
+        - **Describe today’s mood** in a few words
+        - Receive a brief, personalized mood description
+        - Enjoy a curated 10-songs playlist that perfectly match your mood
+            """
+        )
+
+with fcol3:
+    with st.expander("🎵  Track match"):
+        st.markdown(
+            """
+        - **Pick your favorite track & artist**
+        - We hunt down songs whose *lyrics* match your preferred beats and lyrics
+        - Enjoy smooth playback right inside the app
+        - Click *Explain* to see why the matches work
+            """
+        )
 
 #  Affichage vignettes ---------------------------------------------------------
 def card_grid(
@@ -143,39 +180,3 @@ card_grid(
     title   = lambda it: textwrap.shorten(it["name"], 22),
     subtitle= lambda it: ", ".join(a["name"] for a in it["artists"]),
 )
-
-# FEATURES ---------------------------------------------------------------------
-st.markdown('<div id="features"></div>', unsafe_allow_html=True)
-
-fcol1, fcol2, fcol3 = st.columns(3)
-
-with fcol1:
-    with st.expander("🎤  Theme explorer (by artist)"):
-        st.markdown(
-            """
-        - **Enter your favourite artist's name**
-        - We analyse *all* their lyrics
-        - You get a neat write-up of their 3 main themes
-            """
-        )
-
-with fcol2:
-    with st.expander("😊  Mood-mix playlist"):
-        st.markdown(
-            """
-        - **Describe today’s mood** in a few words
-        - Receive a brief, personalized mood description
-        - Enjoy a curated 10-songs playlist that perfectly match your mood
-            """
-        )
-
-with fcol3:
-    with st.expander("🎵  Similar-song finder"):
-        st.markdown(
-            """
-        - **Pick your favorite track & artist**
-        - We hunt down songs whose *lyrics* match your preferred beats and lyrics
-        - Enjoy smooth playback right inside the app
-        - Click *Explain* to see why the matches work
-            """
-        )
