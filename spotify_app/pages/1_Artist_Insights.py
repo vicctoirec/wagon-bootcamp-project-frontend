@@ -24,9 +24,6 @@ urls = get_urls()
 THEMES_URL = urls.get('themes_url', '')
 ARTISTS_URL = urls.get('artist_url', '')
 
-# ---------- State init---------------------------------------------------------
-for k in ("artist_themes", "artist_choice"):
-    st.session_state.setdefault(k, None)
 
 # --- Récupération de la liste d’artistes (1 h de cache) ------------------
 @st.cache_data(ttl=3_600, show_spinner="Loading artist list…")
@@ -56,15 +53,18 @@ st.markdown('<div class="artist-card">', unsafe_allow_html=True)
 
 # --- Select box (ou input) ----------------------------------------
 if artist_list:
-        placeholder = "—"
-        artist_sel  = st.selectbox("🎧  Select an artist",
-                                   [placeholder] + artist_list,
-                                   index=0)
-        st.session_state.artist_choice = None if artist_sel == placeholder else artist_sel
+    placeholder = "-"
+    index = artist_list.index(st.session_state.artist_choice) if st.session_state.artist_choice else None
+    artist_sel  = st.selectbox("🎧  Select an artist",
+                                artist_list,
+                                placeholder=placeholder,
+                                index = index)
+
+    st.session_state.artist_choice = artist_sel
 else:
-        st.session_state.artist_choice = (
-            st.text_input("🎧  Type an artist").strip() or None
-        )
+    st.session_state.artist_choice = (
+        st.text_input("🎧  Type an artist").strip() or None
+    )
 
 # --- CSS pour styliser le bouton désactivé ---
 st.markdown("""

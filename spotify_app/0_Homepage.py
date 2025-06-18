@@ -21,6 +21,10 @@ FONT_URL      = "https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;
 st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🎧", layout="wide", initial_sidebar_state="collapsed")
 apply()
 
+# Init state for artist insights -----------------------------------------------
+for k in ("artist_themes", "artist_choice"):
+    st.session_state.setdefault(k, None)
+
 st.markdown(
     f"""
     <style>
@@ -139,10 +143,7 @@ with fcol3:
         )
 
 #  Affichage vignettes ---------------------------------------------------------
-def card_grid(
-        items, *, cover, title, subtitle,
-        n_cols: int = 6, img_h: int = 160
-    ):
+def card_grid(items, *, cover, title, subtitle, n_cols: int = 6, img_h: int = 160):
     rows = [items[i:i+n_cols] for i in range(0, len(items), n_cols)]
     for row in rows:
         cols = st.columns(n_cols, gap="small")
@@ -151,7 +152,7 @@ def card_grid(
                 if i < len(row):
                     it = row[i]
                     st.image(cover(it), use_container_width=True,
-                             clamp=True, output_format="JPEG", caption=None)
+                                clamp=True, output_format="JPEG", caption=None)
                     st.markdown(
                         f"<b>{title(it)}</b><br>"
                         f"<span style='font-size:.8rem;opacity:.7'>"
