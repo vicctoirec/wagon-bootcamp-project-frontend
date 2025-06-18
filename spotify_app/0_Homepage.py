@@ -10,7 +10,7 @@ import spotipy
 import sys
 import textwrap
 from spotify_style import apply           # thème global dark spotify
-from spotify_api import get_home_sections
+from spotify_api import get_new_releases, get_top_10
 from utils import get_spotify_client
 sp = get_spotify_client()
 
@@ -93,13 +93,56 @@ st.markdown("<div id='discover'></div>", unsafe_allow_html=True)
 # CHARGEMENT DONNÉES  ----------------------------------------------------------
 @st.cache_data(ttl=3600)
 def _fetch():
-    return get_home_sections()  # trending, new_albums, popular_artists
+    return get_new_releases(), get_top_10()  # new_albums, top_tracks
 
 try:
-    trending, new_albums, popular_artists = _fetch()
+    new_albums, top_tracks = _fetch()
 except Exception as err:
     st.error(f"Could not reach Spotify API ({err})."); st.stop()
 
+
+#  Affichage vignettes ---------------------------------------------------------
+def card_grid(
+        items, *, cover, title, subtitle,
+        n_cols: int = 6, img_h: int = 160
+    ):
+    rows = [items[i:i+n_cols] for i in range(0, len(items), n_cols)]
+    for row in rows:
+        cols = st.columns(n_cols, gap="small")
+        for i in range(n_cols):
+            with cols[i]:
+                if i < len(row):
+                    it = row[i]
+                    st.image(cover(it), use_container_width=True,
+                             clamp=True, output_format="JPEG", caption=None)
+                    st.markdown(
+                        f"<b>{title(it)}</b><br>"
+                        f"<span style='font-size:.8rem;opacity:.7'>"
+                        f"{subtitle(it)}</span>",
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.empty()
+
+
+
+# SECTIONS  --------------------------------------------------------------------
+st.subheader("🔥 Trending tracks")
+card_grid(
+    top_tracks[:10],
+    cover   = lambda it: it['track']['album']['images'][0]['url'],
+    title  = lambda it: textwrap.shorten(it['track']['name'], 22),
+    subtitle = lambda it: ', '.join(it['track']['artists'][i]['name'] for i in range(len(it['track']['artists']))),
+)
+
+
+st.subheader("🆕 New releases")
+card_grid(
+    new_albums[:10],
+    cover   = lambda it: it["images"][0]["url"],
+    title   = lambda it: textwrap.shorten(it["name"], 22),
+    subtitle= lambda it: ", ".join(a["name"] for a in it["artists"]),
+)
 
 # FEATURES ---------------------------------------------------------------------
 st.markdown('<div id="features"></div>', unsafe_allow_html=True)
@@ -136,43 +179,3 @@ with fcol3:
         - Click *Explain* to see why the matches work
             """
         )
-
-
-#  Affichage vignettes ---------------------------------------------------------
-def card_grid(
-        items, *, cover, title, subtitle,
-        n_cols: int = 6, img_h: int = 160
-    ):
-    rows = [items[i:i+n_cols] for i in range(0, len(items), n_cols)]
-    for row in rows:
-        cols = st.columns(n_cols, gap="small")
-        for i in range(n_cols):
-            with cols[i]:
-                if i < len(row):
-                    it = row[i]
-                    st.image(cover(it), use_container_width=True,
-                             clamp=True, output_format="JPEG", caption=None)
-                    st.markdown(
-                        f"<b>{title(it)}</b><br>"
-                        f"<span style='font-size:.8rem;opacity:.7'>"
-                        f"{subtitle(it)}</span>",
-                        unsafe_allow_html=True,
-                    )
-                else:
-                    st.empty()
-
-
-
-# SECTIONS  --------------------------------------------------------------------
-st.subheader("🔥 Trending tracks")
-
-
-st.subheader("🆕 New releases")
-card_grid(
-    new_albums[:10],
-    cover   = lambda it: it["images"][0]["url"],
-    title   = lambda it: textwrap.shorten(it["name"], 22),
-    subtitle= lambda it: ", ".join(a["name"] for a in it["artists"]),
-)
-
-st.subheader("🎤 Popular artists")
