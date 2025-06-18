@@ -1,8 +1,7 @@
-# spotify_app/pages/0_Home.py
 """
 🎧  Spotify-style landing page
 ────────────────────────────
-Affiche la “home” dynamique (trending tracks / new releases / popular artists)
+Affiche une “home” dynamique (trending tracks / new releases / popular artists)
 et rappelle les trois features de l’app.
 """
 
@@ -12,8 +11,10 @@ import sys
 import textwrap
 from spotify_style import apply           # thème global dark spotify
 from spotify_api import get_home_sections
+from utils import get_spotify_client
+sp = get_spotify_client()
 
-# -- 1️⃣  THEME ----------------------------------------------------------------
+# -- THEME ---------------------------------------------------------------------
 SPOTIFY_GREEN = "#1DB954"
 FONT_URL      = "https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;700&display=swap"
 
@@ -31,16 +32,15 @@ st.markdown(
 
     /* --- HERO ------------------------------------------------------------ */
     .hero {{
-        height:360px;
-        background:linear-gradient(135deg, {SPOTIFY_GREEN} 0%, #121212 55%);
-        border-radius:0.75rem;
-        padding:3.5rem 4rem;
-        display:flex;flex-direction:column;justify-content:center;
-        box-shadow:0 0 24px rgba(0,0,0,.6);
-        color:#fff;
+        background:linear-gradient(135deg,#1DB954 0%,#0d1 55%,#000 100%);
+        padding:2rem 3rem 2rem;
+        border-radius:1rem;
+        box-shadow:0 8px 24px rgba(0,0,0,.4);
     }}
-    .hero h1 {{font-size:3rem;margin:0 0 .5rem 0}}
-    .hero p  {{opacity:.85;font-size:1.15rem;margin:0}}
+    .hero h1 {{font-size:2.3rem;line-height:1.15;margin:0 0 .5rem}}
+    .hero p  {{margin:0 0 1.5rem;opacity:.85}}
+    .hero a  {{color:#fff !important; text-decoration:none;}}
+    .hero a:hover{{text-decoration:underline;}}
 
     /* --- CARDS ----------------------------------------------------------- */
         .card-wrap {{
@@ -74,7 +74,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 2️⃣  HERO  -------------------------------------------------------------------
+# HERO  ------------------------------------------------------------------------
 with st.container():
     st.markdown(
         """
@@ -82,7 +82,7 @@ with st.container():
             <h1>Feel the music.<br/>Read the lyrics.</h1>
             <p>Three AI-powered features to help you fine-tune your musics choices thanks to lyrics
             – all inside a Spotify-like experience.</p>
-            <a href="#discover" class="cta">Jump in ↓</a>
+            <a href="#features" class="cta">Jump in features description ↓</a>
         </div>
         """,
         unsafe_allow_html=True,
@@ -90,17 +90,55 @@ with st.container():
 
 st.markdown("<div id='discover'></div>", unsafe_allow_html=True)
 
-# 3️⃣  CHARGEMENT DONNÉES  -----------------------------------------------------
+# CHARGEMENT DONNÉES  ----------------------------------------------------------
 @st.cache_data(ttl=3600)
 def _fetch():
-    return get_home_sections()    # trending, new_albums, popular_artists
+    return get_home_sections()  # trending, new_albums, popular_artists
 
 try:
     trending, new_albums, popular_artists = _fetch()
 except Exception as err:
     st.error(f"Could not reach Spotify API ({err})."); st.stop()
 
-#  helper affichage vignettes ----------------------------------------
+
+# FEATURES ---------------------------------------------------------------------
+st.markdown('<div id="features"></div>', unsafe_allow_html=True)
+
+fcol1, fcol2, fcol3 = st.columns(3)
+
+with fcol1:
+    with st.expander("🎤  Theme explorer (by artist)"):
+        st.markdown(
+            """
+        - **Enter your favourite artist's name**
+        - We analyse *all* their lyrics
+        - You get a neat write-up of their 3 main themes
+            """
+        )
+
+with fcol2:
+    with st.expander("😊  Mood-mix playlist"):
+        st.markdown(
+            """
+        - **Describe today’s mood** in a few words
+        - Receive a brief, personalized mood description
+        - Enjoy a curated 10-songs playlist that perfectly match your mood
+            """
+        )
+
+with fcol3:
+    with st.expander("🎵  Similar-song finder"):
+        st.markdown(
+            """
+        - **Pick your favorite track & artist**
+        - We hunt down songs whose *lyrics* match your preferred beats and lyrics
+        - Enjoy smooth playback right inside the app
+        - Click *Explain* to see why the matches work
+            """
+        )
+
+
+#  Affichage vignettes ---------------------------------------------------------
 def card_grid(
         items, *, cover, title, subtitle,
         n_cols: int = 6, img_h: int = 160
@@ -112,7 +150,7 @@ def card_grid(
             with cols[i]:
                 if i < len(row):
                     it = row[i]
-                    st.image(cover(it), use_column_width=True,
+                    st.image(cover(it), use_container_width=True,
                              clamp=True, output_format="JPEG", caption=None)
                     st.markdown(
                         f"<b>{title(it)}</b><br>"
@@ -123,27 +161,18 @@ def card_grid(
                 else:
                     st.empty()
 
-# 5️⃣  SECTIONS  ---------------------------------------------------------------
+
+
+# SECTIONS  --------------------------------------------------------------------
 st.subheader("🔥 Trending tracks")
-card_grid(
-    trending[:10],
-    cover   = lambda it: it["track"]["album"]["images"][0]["url"],
-    title   = lambda it: textwrap.shorten(it["track"]["name"], 22),
-    sub     = lambda it: it["track"]["artists"][0]["name"],
-)
+
 
 st.subheader("🆕 New releases")
 card_grid(
     new_albums[:10],
     cover   = lambda it: it["images"][0]["url"],
     title   = lambda it: textwrap.shorten(it["name"], 22),
-    sub     = lambda it: ", ".join(a["name"] for a in it["artists"]),
+    subtitle= lambda it: ", ".join(a["name"] for a in it["artists"]),
 )
 
 st.subheader("🎤 Popular artists")
-card_grid(
-    popular_artists[:10],
-    cover   = lambda it: it["album"]["images"][0]["url"],
-    title   = lambda it: it["name"],
-    sub     = lambda it: it["artists"][0]["name"],
-)

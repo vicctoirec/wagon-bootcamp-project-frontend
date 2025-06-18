@@ -29,14 +29,7 @@ def get_home_sections(country: str = "FR", n: int = 20):
         return [], [], []
 
     # --- 1) Trending playlist -------------------------------------------------
-    try:
-        pl = sp.featured_playlists(country=country, limit=1)["playlists"]["items"][0]
-        trending = sp.playlist_items(pl["id"], limit=n)["items"]
-        if not trending:                                             # ← fallback
-            trending = sp.playlist_items("37i9dQZEVXbMDoHDwVN2tF",   # Top 50
-                                           limit=n)["items"]
-    except Exception:
-        trending = []
+    trending = []
 
     # --- 2) New releases ------------------------------------------------------
     try:
@@ -45,10 +38,6 @@ def get_home_sections(country: str = "FR", n: int = 20):
         new_albums = []
 
     # --- 3) Popular artists (fallback « Top 50 ») -----------------------------
-    try:
-        top50 = sp.search(q="tag:hipster", type="track", limit=n)["tracks"]["items"]
-        popular_artists = top50
-    except Exception:
-        popular_artists = []
+    popular_artists = []
 
     return trending, new_albums, popular_artists
