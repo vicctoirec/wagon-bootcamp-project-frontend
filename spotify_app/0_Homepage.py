@@ -7,14 +7,11 @@ et rappelle les trois features de l’app.
 """
 
 import streamlit as st
-from spotify_app.spotify_style import apply           # thème global dark spotify
-from spotify_app.spotify_api   import get_trending
-from utils import get_spotify_client
 import spotipy
 import sys
 import textwrap
-sp = get_spotify_client()
-
+from spotify_style import apply           # thème global dark spotify
+from spotify_api import get_home_sections
 
 # -- 1️⃣  THEME ----------------------------------------------------------------
 SPOTIFY_GREEN = "#1DB954"
@@ -103,21 +100,28 @@ try:
 except Exception as err:
     st.error(f"Could not reach Spotify API ({err})."); st.stop()
 
-# 4️⃣  FONCTION HELPER CARDS ---------------------------------------------------
-def card_grid(items, cover, title, sub):
-    st.markdown('<div class="card-wrap">', unsafe_allow_html=True)
-    for it in items:
-        st.markdown(
-            f"""
-            <div class="card">
-              <img src="{cover(it)}">
-              <div class="card-title">{title(it)}</div>
-              <div class="card-sub">{sub(it)}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    st.markdown("</div>", unsafe_allow_html=True)
+#  helper affichage vignettes ----------------------------------------
+def card_grid(
+        items, *, cover, title, subtitle,
+        n_cols: int = 6, img_h: int = 160
+    ):
+    rows = [items[i:i+n_cols] for i in range(0, len(items), n_cols)]
+    for row in rows:
+        cols = st.columns(n_cols, gap="small")
+        for i in range(n_cols):
+            with cols[i]:
+                if i < len(row):
+                    it = row[i]
+                    st.image(cover(it), use_column_width=True,
+                             clamp=True, output_format="JPEG", caption=None)
+                    st.markdown(
+                        f"<b>{title(it)}</b><br>"
+                        f"<span style='font-size:.8rem;opacity:.7'>"
+                        f"{subtitle(it)}</span>",
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.empty()
 
 # 5️⃣  SECTIONS  ---------------------------------------------------------------
 st.subheader("🔥 Trending tracks")

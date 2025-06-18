@@ -1,30 +1,54 @@
-# spotify_app/spotify_api.py
-import streamlit as st, spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
+"""
+spotify_api.py
+──────────────
+Centralise tous les appels Spotipy utilisés dans l’app.
+"""
 
-@st.cache_resource(show_spinner=False)
-def sp():
-    cid     = st.secrets.get("spotify_client_id")
-    secret  = st.secrets.get("spotify_client_secret")
-    if not cid or not secret:
-        st.warning("Spotify keys missing in secrets.toml")
-        return None
-    return spotipy.Spotify(auth_manager=SpotifyClientCredentials(
-        client_id=cid, client_secret=secret))
+from spotipy import Spotify
+from utils import get_spotify_client
+import streamlit as st
 
-# 1) Trending : on récupère la playlist “Global Top 50” via son ID
-TREND_PLAY_ID = "37i9dQZEVXbMDoHDwVN2tF"
+# ------------------------------------------------------------------
+# 1.  CONNEXION
+# ------------------------------------------------------------------
+sp = get_spotify_client()
 
-def get_trending(limit=10, market="FR"):
-    sp = sp()
+# ------------------------------------------------------------------
+# 2.  HOME SECTIONS
+#     → renvoie 3 listes : trending tracks, new albums, popular artists
+# ------------------------------------------------------------------
+def get_home_sections(country: str = "FR", n: int = 20):
+    """
+    Returns (trending_tracks, new_albums, popular_artists)
+
+    • trending_tracks   : sp.playlist_items d’une playlist « Top Hits »
+    • new_albums        : sp.new_releases
+    • popular_artists   : on triche en prenant les titres d’un « Top 50 »
+    """
     if sp is None:
-        return []
+        return [], [], []
 
-    items = sp.playlist_items(
-        TREND_PLAY_ID,
-        limit=limit,
-        market=market,
-        additional_types=("track",)
-    )["items"]
+    # --- 1) Trending playlist -------------------------------------------------
+    try:
+        pl = sp.featured_playlists(country=country, limit=1)["playlists"]["items"][0]
+        trending = sp.playlist_items(pl["id"], limit=n)["items"]
+        if not trending:                                             # ← fallback
+            trending = sp.playlist_items("37i9dQZEVXbMDoHDwVN2tF",   # Top 50
+                                           limit=n)["items"]
+    except Exception:
+        trending = []
 
-    return items
+    # --- 2) New releases ------------------------------------------------------
+    try:
+        new_albums = sp.new_releases(country=country, limit=n)["albums"]["items"]
+    except Exception:
+        new_albums = []
+
+    # --- 3) Popular artists (fallback « Top 50 ») -----------------------------
+    try:
+        top50 = sp.search(q="tag:hipster", type="track", limit=n)["tracks"]["items"]
+        popular_artists = top50
+    except Exception:
+        popular_artists = []
+
+    return trending, new_albums, popular_artists
