@@ -82,7 +82,7 @@ with st.container():
             <h1>Feel the music.<br/>Read the lyrics.</h1>
             <p>Three AI-powered features to help you fine-tune your musics choices thanks to lyrics
             – all inside a Spotify-like experience.</p>
-            <a href="#features" class="cta">Jump in features description ↓</a>
+            <a href="#features" class="cta"> Jump to overview of features ↓</a>
         </div>
         """,
         unsafe_allow_html=True,
@@ -103,7 +103,7 @@ except Exception as err:
 # FEATURES ---------------------------------------------------------------------
 st.markdown('<div id="features"></div>', unsafe_allow_html=True)
 
-st.subheader("🤓 Feature description")
+st.subheader("🤓 Overview of features")
 
 fcol1, fcol2, fcol3 = st.columns(3)
 
