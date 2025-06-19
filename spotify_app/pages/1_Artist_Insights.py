@@ -13,21 +13,21 @@ from spotify_style import apply as apply_style, hero
 st.set_page_config(page_title="Understand your favorite artists' lyrics", page_icon="🎤", layout="wide")
 apply_style()
 
-# Convertir l'image en base64
-with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'media/qr_code.jpg'), "rb") as f:
-    img_data = f.read()
-img_base64 = base64.b64encode(img_data).decode()
+# # Convertir l'image en base64
+# with open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'media/qr_code.jpg'), "rb") as f:
+#     img_data = f.read()
+# img_base64 = base64.b64encode(img_data).decode()
 
-# Affichage centré dans la sidebar
-st.sidebar.markdown(
-    f"""
-    <div style="text-align: center;">
-        <img src="data:image/png;base64,{img_base64}" width="130"/>
-        <p style="margin-top: 0.5rem;">Try the app!</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# # Affichage centré dans la sidebar
+# st.sidebar.markdown(
+#     f"""
+#     <div style="text-align: center;">
+#         <img src="data:image/png;base64,{img_base64}" width="130"/>
+#         <p style="margin-top: 0.5rem;">Try the app!</p>
+#     </div>
+#     """,
+#     unsafe_allow_html=True
+# )
 
 for k in ("artist_themes", "artist_choice", "sm_artist_choice", "sm_song_choice", "sm_song_songs", "sm_lyrics_explain"):
     if k not in st.session_state:
