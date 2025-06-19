@@ -9,6 +9,8 @@ import streamlit as st
 import spotipy
 import sys
 import textwrap
+import os
+import base64
 from spotify_style import apply           # thème global dark spotify
 from spotify_api import get_new_releases, get_top_10
 from utils import get_spotify_client
@@ -20,6 +22,22 @@ FONT_URL      = "https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;
 
 st.set_page_config(page_title="AI Spotify Lyrics", page_icon="🎧", layout="wide", initial_sidebar_state="collapsed")
 apply()
+
+# Convertir l'image en base64
+with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'media/qr_code.jpg'), "rb") as f:
+    img_data = f.read()
+img_base64 = base64.b64encode(img_data).decode()
+
+# Affichage centré dans la sidebar
+st.sidebar.markdown(
+    f"""
+    <div style="text-align: center;">
+        <img src="data:image/png;base64,{img_base64}" width="130"/>
+        <p style="margin-top: 0.5rem;">Try the app!</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # Init state for artist insights -----------------------------------------------
 for k in ("artist_themes", "artist_choice", "sm_artist_choice", "sm_song_choice", "sm_song_songs", "sm_lyrics_explain"):
