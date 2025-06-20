@@ -59,7 +59,13 @@ def reset_on_mood_change():
     st.session_state.enriched = None
     st.session_state['predict-mood-songs'] = None
 # ----------- UI ---------------------------------------------------------------
+
 st.divider()
+
+# ----------  Toggle avec capture d'écran --------------------------------------
+with st.expander("👀 Under the hood"):
+    st.image(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),'media/feature_2.png'), caption="Methodology feature 2", use_container_width=True)
+
 
 st.markdown(
     """
@@ -164,7 +170,3 @@ st.markdown(
     "<hr style='border:none;border-top:1px solid #333;margin-top:1.5rem;'>",
     unsafe_allow_html=True,
 )
-
-# ----------  Toggle avec capture d'écran --------------------------------------
-with st.expander("👀 Under the hood"):
-    st.image(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),'media/feature_2.png'), caption="Methodology feature 2", use_container_width=True)
